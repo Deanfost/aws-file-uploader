@@ -6,7 +6,7 @@ services:
   ui-service:
     build: ./react-app
     ports:
-      - 80:5000
+      - 5000:5000
     depends_on:
       - api-service
       

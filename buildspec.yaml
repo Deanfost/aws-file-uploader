@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Docker Hub...
+      - echo "${DOCKERHUB_PASS}" | docker login -u "${DOCKERHUB_USER}" --password-stdin
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Express Docker image...
+      - docker build -t deanfost/file-uploader-express:$IMAGE_TAG ./express
+      - echo Building the React Docker image...
+      - docker build -t deanfost/file-uploader-react:$IMAGE_TAG ./react-app
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push deanfost/file-uploader-express
+      - docker push deanfost/file-uploader-react
+artifacts:
+  files:
+    - 'Dockerrun.aws.json'
