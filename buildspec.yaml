@@ -18,6 +18,6 @@ phases:
       - echo Pushing the Docker images...
       - docker push deanfost/file-uploader-express
       - docker push deanfost/file-uploader-react
-# artifacts:
-#   files:
-#     - 'Dockerrun.aws.json'
+artifacts:
+  files:
+    - 'Dockerrun.aws.json'
