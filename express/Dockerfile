@@ -1,5 +1,5 @@
 # pull base image
-FROM node:alpine
+FROM node:14-alpine3.14
 # set working directory
 WORKDIR /app
 # copy dependency list

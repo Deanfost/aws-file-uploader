@@ -1,5 +1,5 @@
 # pull base image
-FROM node:alpine AS builder
+FROM node:14-alpine3.14 AS builder
 # set working directory
 WORKDIR /app
 # copy dependency list
@@ -12,7 +12,7 @@ COPY . .
 RUN npm run build
 
 # package production build into final container
-FROM node:alpine 
+FROM node:14-alpine3.14
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
 COPY --from=builder /app/build ./build

@@ -1,0 +1,11 @@
+services:
+   api-service:
+     image: deanfost/file-uploader-express
+     ports:
+       - 3000:3000
+   ui-service:
+     image: deanfost/file-uploader-react
+     ports:
+       - 5000:5000
+     depends_on:
+       - api-service

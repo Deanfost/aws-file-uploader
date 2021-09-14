@@ -20,4 +20,4 @@ phases:
       - docker push deanfost/file-uploader-react
 artifacts:
   files:
-    - 'Dockerrun.aws.json'
+    - 'docker-compose.yaml'
