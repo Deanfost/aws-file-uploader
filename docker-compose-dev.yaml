@@ -1,0 +1,12 @@
+services:
+   api-service:
+     build: ./express
+     ports:
+       - 3000:3000
+   ui-service:
+     build: ./react-app
+     ports:
+       - 5000:5000
+     depends_on:
+       - api-service
+       
