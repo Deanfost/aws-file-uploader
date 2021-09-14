@@ -6,6 +6,6 @@ services:
    ui-service:
      image: deanfost/file-uploader-react
      ports:
-       - 5000:5000
+       - 80:5000
      depends_on:
        - api-service
