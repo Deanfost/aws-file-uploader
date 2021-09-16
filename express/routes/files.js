@@ -5,7 +5,8 @@ let s3Client = new S3.S3Client({region: process.env.REGION});
 
 /* GET uploaded files */
 router.get('/', function(req, res) {
-    res.send('region: ' + process.env.REGION);
+    res.send('env ' + process.env.REGION);
+    // res.send('region: ' + process.env.REGION);
 });
 
 /* POST a new file */

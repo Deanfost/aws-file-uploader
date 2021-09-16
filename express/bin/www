@@ -4,15 +4,16 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('express:server');
-var http = require('http');
-
 /**
  * Load env vars if in dev (otherwise will be set by Beanstalk).
  */
-if (process.env.NODE_ENV != 'production')
-  require('dotenv').config({path: '../.env'});
+if (process.env.NODE_ENV != 'production') {
+  var path = require('path');
+  require('dotenv').config({path: path.resolve(__dirname, '../.env')});
+}
+
+var app = require('../app');
+var http = require('http');
 
 /**
  * Get port from environment and store in Express.
@@ -92,5 +93,5 @@ function onListening() {
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
-  debug('Listening on ' + bind);
+  console.log('Listening on ' + bind);
 }
