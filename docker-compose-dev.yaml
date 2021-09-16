@@ -1,6 +1,8 @@
 services:
    api-service:
      build: ./express
+     volumes:
+       - ./express:/app
      ports:
        - 3000:3000
    ui-service:

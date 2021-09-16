@@ -9,6 +9,12 @@ var debug = require('debug')('express:server');
 var http = require('http');
 
 /**
+ * Load env vars if in dev (otherwise will be set by Beanstalk).
+ */
+if (process.env.NODE_ENV != 'production')
+  require('dotenv').config({path: '../.env'});
+
+/**
  * Get port from environment and store in Express.
  */
 
