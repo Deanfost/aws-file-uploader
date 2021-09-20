@@ -5,6 +5,7 @@ let s3Client = new S3.S3Client({region: process.env.REGION});
 
 /* GET objects list at prefix */
 router.get('/', acceptQueryParams(['prefix']), async function(req, res, next) {
+    console.log(process.env);
     let prefix = req.query.prefix ? req.query.prefix : '.';
 
     // Configure S3 command
@@ -24,7 +25,7 @@ router.get('/', acceptQueryParams(['prefix']), async function(req, res, next) {
 
 /* GET uploaded objects at prefix */
 router.get('/objects', acceptQueryParams([]), async function(req, res, next) {
-
+    res.sendStatus(501);
 });
 
 /* POST a new file */
