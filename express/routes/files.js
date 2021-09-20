@@ -10,13 +10,13 @@ router.get('/', acceptQueryParams(['prefix']), async function(req, res, next) {
     // Configure S3 command
     const bucketParams = {
         Bucket: process.env.BUCKET,
-        prefix
+        Prefix: prefix
     };
 
     try {
-        // Request object list from S3 and send
-        const data = await s3Client.send(new S3.ListObjectsCommand(bucketParams));
-        res.send(data);
+        // Request object list from S3
+        const s3Response = await s3Client.send(new S3.ListObjectsV2Command(bucketParams));
+        res.send(s3Response.Contents);
     } catch (err) {
         next(err);
     }
@@ -45,10 +45,10 @@ function acceptQueryParams(params) {
     return (req, res, next) => {
         // Throw 400 if invalid query params
         let queries = req.query;
-        for (q in Object.keys(queries)) {
+        for (q in queries) {
             if (!params.includes(q)) {
                 res.status(400);
-                res.send('Malformed request, check query params');
+                return res.send('Malformed request, check query params');
             }
         }
         next();
