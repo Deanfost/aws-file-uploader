@@ -5,17 +5,17 @@ let s3Client = new S3.S3Client({region: process.env.REGION});
 
 /* GET objects list at prefix */
 router.get('/', acceptQueryParams(['prefix']), async function(req, res, next) {
-    let prefix = req.query.prefix ? req.query.prefix : '.';
+    let prefix = req.query.prefix;
 
     // Configure S3 command
-    const bucketParams = {
+    const commandParams = {
         Bucket: process.env.BUCKET,
         Prefix: prefix
     };
 
     try {
         // Request object list from S3
-        const s3Response = await s3Client.send(new S3.ListObjectsV2Command(bucketParams));
+        const s3Response = await s3Client.send(new S3.ListObjectsV2Command(commandParams));
         res.send(s3Response.Contents);
     } catch (err) {
         next(err);
@@ -23,8 +23,23 @@ router.get('/', acceptQueryParams(['prefix']), async function(req, res, next) {
 });
 
 /* GET uploaded objects at prefix */
-router.get('/objects', acceptQueryParams([]), async function(req, res, next) {
-    res.sendStatus(501);
+router.get('/objects', acceptQueryParams(['key', 'folder']), async function(req, res, next) {
+    let key = req.query.key ? req.query.key : '.';
+    let isFolder = req.query.folder ? true : false;
+
+    // Configure S3 command
+    const commandParams = {
+        Bucket: process.env.BUCKET,
+        Key: key
+    };
+
+    try {
+        // Request object from S3
+        const data = await s3Client.send(new S3.GetObjectCommand(commandParams));
+        data.Body.pipe(res);
+    } catch (err) {
+        next(err);
+    }
 });
 
 /* POST a new file */
