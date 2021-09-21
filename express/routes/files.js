@@ -33,43 +33,52 @@ router.get('/',
 router.get('/objects', 
     query('key').exists().notEmpty(), 
     async function(req, res, next) {
-    let key = req.query.key;
+    let keyOrPrefix = req.query.key;
 
     // Preemptively create temp archive path
     const archivePath = path.join(process.env.TEMP_PATH, uniqid('', '.zip'));
 
     try {
-        if (!key.endsWith('/')) {
+        if (!keyOrPrefix.endsWith('/')) {
             // Get file stream from S3
-            const data = await s3Client.send(new S3.GetObjectCommand({
+            const response = await s3Client.send(new S3.GetObjectCommand({
                 Bucket: process.env.BUCKET,
-                Key: key
+                Key: keyOrPrefix
             }));
-            if (!data.Body) res.sendStatus(404);
+            if (!response.Body) res.sendStatus(404);
             else {
                 // Set attachment header, stream to client
-                res.attachment(key);
-                data.Body.pipe(res);
+                res.attachment(keyOrPrefix);
+                response.Body.pipe(res);
             }
         } else {
-            // Create and send a temp archive of objects
-            await createArchive(key, archivePath);
+            // Create temp archive of prefix objects
+            await createArchive(keyOrPrefix, archivePath);
             const absPath = path.resolve(archivePath);
             const s = fs.createReadStream(absPath);
+            
+            // Send attachment header, stream to client
+            res.attachment(path.basename(archivePath));
             s.pipe(res);
+
+            // Pipe callbacks
             s.on('close', () => {
                 fs.unlinkSync(absPath);
             });
-            s.on('error', err => {
-                fs.unlinkSync(absPath);
-                next(err);
-            });
         }
     } catch (err) {
+        // Delete temp archive path as needed
         if (fs.existsSync(archivePath))
             fs.unlinkSync(archivePath);
+
+        // Forward S3 errors
+        if (err['$metadata'] && err['$metadata']['httpStatusCode'] == 404)
+            err = 404;
+
         if (err == 404) {
-            return res.sendStatus(err);
+            res.status(404);
+            res.send('File not found');
+            return;
         }
         next(err);
     }
