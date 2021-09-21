@@ -14,6 +14,11 @@ let s3Client = new S3.S3Client({ region: process.env.REGION });
 router.get('/',
     query('prefix').optional().notEmpty(),
     async function (req, res, next) {
+        // Check request formatting
+        const formatErrors = validationResult(req);
+        if (!formatErrors.isEmpty()) {
+            return res.status(400).json({ errors: formatErrors.array() });
+        }
         let prefix = req.query.prefix;
 
         try {
@@ -30,8 +35,13 @@ router.get('/',
 
 /* GET uploaded objects at prefix */
 router.get('/objects',
-    query('key').exists().notEmpty(),
+    query('key').exists().bail().notEmpty(),
     async function (req, res, next) {
+        // Check request formatting
+        const formatErrors = validationResult(req);
+        if (!formatErrors.isEmpty()) {
+            return res.status(400).json({ errors: formatErrors.array() });
+        }
         let keyOrPrefix = req.query.key;
 
         // Preemptively create temp archive path
@@ -76,7 +86,7 @@ router.get('/objects',
 
             if (err == 404) {
                 res.status(404);
-                res.send('File not found');
+                res.send('File or folder not found');
                 return;
             }
             next(err);
