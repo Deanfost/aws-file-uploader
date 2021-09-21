@@ -3,7 +3,7 @@ const Archiver = require('archiver');
 const fs = require('fs');
 const path = require('path');
 
-let s3Client = new S3.S3Client({region: process.env.REGION});
+let s3Client = new S3.S3Client({ region: process.env.REGION });
 
 // Archive a prefix (folder) and its objects
 async function createArchive(rootPrefix, archivePath) {
@@ -42,7 +42,7 @@ async function createArchive(rootPrefix, archivePath) {
             if (caughtErr) return reject(caughtErr);
             resolve();
         });
-    
+
         // Direct archiver to temp path
         archive.pipe(output);
 
@@ -74,7 +74,7 @@ async function createArchive(rootPrefix, archivePath) {
         } catch (err) {
             caughtErr = err;
             archive.abort();
-        }        
+        }
     });
 }
 

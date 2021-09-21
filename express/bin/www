@@ -21,7 +21,7 @@ var { emptyDirSync } = require('fs-extra');
  * Create temp directory for archives (or clear it if exists).
  */
 
-const tempPath = '/temp';
+const tempPath = '/app-temp';
 if (!fs.existsSync(tempPath)) fs.mkdirSync(tempPath);
 else emptyDirSync(tempPath);
 process.env['TEMP_PATH'] = tempPath;
