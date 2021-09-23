@@ -27,7 +27,17 @@ router.get('/',
                 Bucket: process.env.BUCKET,
                 Prefix: prefix
             }));
-            res.send(s3Response.Contents);
+            if (!s3Response.Contents) return res.sendStatus(404);
+            
+            // Only show same-depth keys
+            const filtered = s3Response.Contents.filter(v => {
+                const prefixLen = prefix ? prefix.length : 0;
+                const withoutPrefix = v.Key.substring(prefixLen);
+                const delimI = withoutPrefix.indexOf('/', 1);
+                if (delimI != -1 && delimI < withoutPrefix.length - 1) return false;
+                return true;
+            });
+            res.json(filtered);
         } catch (err) {
             next(err);
         }
@@ -44,11 +54,12 @@ router.get('/objects',
         }
         let keyOrPrefix = req.query.key;
 
-        // Preemptively create temp archive path
+        // Create archive path
         const archivePath = path.join(process.env.TEMP_PATH, uniqid('', '.zip'));
 
-        try {
-            if (!keyOrPrefix.endsWith('/')) {
+        if (!keyOrPrefix.endsWith('/')) {
+            // GET single object
+            try {
                 // Get file stream from S3
                 const response = await s3Client.send(new S3.GetObjectCommand({
                     Bucket: process.env.BUCKET,
@@ -60,7 +71,13 @@ router.get('/objects',
                     res.attachment(keyOrPrefix);
                     response.Body.pipe(res);
                 }
-            } else {
+            } catch (err) {
+                if (err.message == 'NoSuchKey') return res.sendStatus(404);
+                next(err);
+            }
+        } else {
+            // GET several objects
+            try {
                 // Create temp archive of prefix objects
                 await createArchive(keyOrPrefix, archivePath);
                 const absPath = path.resolve(archivePath);
@@ -74,22 +91,17 @@ router.get('/objects',
                 s.on('close', () => {
                     fs.unlinkSync(absPath);
                 });
+            } catch (err) {
+                // Delete temp archive path as needed
+                if (fs.existsSync(archivePath))
+                    fs.unlinkSync(archivePath);
+                
+                // Handle createArchive() 404
+                if (err.message == 404) {
+                    return res.sendStatus(404);
+                }
+                next(err);
             }
-        } catch (err) {
-            // Delete temp archive path as needed
-            if (fs.existsSync(archivePath))
-                fs.unlinkSync(archivePath);
-
-            // Forward S3 errors
-            if (err['$metadata'] && err['$metadata']['httpStatusCode'] == 404)
-                err = 404;
-
-            if (err == 404) {
-                res.status(404);
-                res.send('File or folder not found');
-                return;
-            }
-            next(err);
         }
     });
 

@@ -52,7 +52,7 @@ async function createArchive(rootPrefix, archivePath) {
                 Bucket: process.env.BUCKET,
                 Prefix: rootPrefix
             }));
-            if (!keysResponse.Contents) return reject(404);
+            if (!keysResponse.Contents) throw new Error(404);
             let keys = keysResponse.Contents.map(obj => obj.Key);
 
             // Collect streams for files, ignore prefixes
