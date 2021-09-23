@@ -78,6 +78,9 @@ router.get('/objects',
         } else {
             // GET several objects
             try {
+                // Special case: get bucket root
+                if (keyOrPrefix == '/') keyOrPrefix = '';
+
                 // Create temp archive of prefix objects
                 await createArchive(keyOrPrefix, archivePath);
                 const absPath = path.resolve(archivePath);
